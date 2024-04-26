@@ -41,16 +41,13 @@ workflow QUANTSEQ {
         ch_fastq
     )
 
-    GET_POLYA_READS(
-        CUTADAPT_ADAPTERS.out.reads
-    )
-
     // Decompress the gtf / gff
     GUNZIP(
         Channel.fromPath(params.gtf).map{
             path -> [['id': 'gtf'], path]
         }
     )
+
     GUNZIP.out.gunzip
         .map{ tuple -> tuple[1] }
         .collect()
@@ -60,35 +57,48 @@ workflow QUANTSEQ {
         params.fasta,
         gtf_gunzip
     )
+    
     STAR_GENOMEGENERATE.out.index
         .collect()
         .set{ star_index }
 
-    STAR_ALIGN(
-        GET_POLYA_READS.out.reads,
-        star_index,
-        gtf_gunzip,
-        true,  // star_ignore_sjdbgtf - Required for the GTF to be used to detect splice junctions
-        false, // seq_platform
-        false  // seq_center
-    )
-    STAR_ALIGN.out.bam_sorted
-        .map{ tuple -> tuple[1] }
-        .collect()
-        .map{ paths -> [['id': 'merged_polya'], paths] }
-        .set{ collected_reads }
+    if(!params.polya_bed){
+        GET_POLYA_READS(
+            CUTADAPT_ADAPTERS.out.reads
+        )
 
-    POLYA_COVERAGE(
-        collected_reads,
-        gtf_gunzip
-    )
+        STAR_ALIGN(
+            GET_POLYA_READS.out.reads,
+            star_index,
+            gtf_gunzip,
+            true,  // star_ignore_sjdbgtf - Required for the GTF to be used to detect splice junctions
+            false, // seq_platform
+            false  // seq_center
+        )
+        STAR_ALIGN.out.bam_sorted
+            .map{ tuple -> tuple[1] }
+            .collect()
+            .map{ paths -> [['id': 'merged_polya'], paths] }
+            .set{ collected_reads }
+
+        POLYA_COVERAGE(
+            collected_reads,
+            gtf_gunzip
+        )
+    ch_polya_bed = POLYA_COVERAGE.out.polya_bed
+    } else {
+        ch_polya_bed = Channel.fromPath(params.polya_bed).map{
+            path -> [['id': 'polya_bed'], path]
+        }
+    
+    }
 
     GENERATE_COUNT_TABLE(
         CUTADAPT_ADAPTERS.out.reads,
         star_index,
         gtf_gunzip,
         fai,
-        POLYA_COVERAGE.out.polya_bed
+        ch_polya_bed
     )
 
 }
