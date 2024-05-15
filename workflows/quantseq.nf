@@ -83,7 +83,8 @@ workflow QUANTSEQ {
 
         POLYA_COVERAGE(
             collected_reads,
-            gtf_gunzip
+            gtf_gunzip,
+            params.quantseq_rev
         )
     ch_polya_bed = POLYA_COVERAGE.out.polya_bed
     } else {
@@ -98,7 +99,8 @@ workflow QUANTSEQ {
         star_index,
         gtf_gunzip,
         fai,
-        ch_polya_bed
+        ch_polya_bed,
+        params.quantseq_rev
     )
 
 }

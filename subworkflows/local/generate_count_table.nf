@@ -12,6 +12,7 @@ include {
 } from '../../modules/nf-core/modules/ucsc/bedgraphtobigwig/main.nf'
 include { BEDTOOLS_BAMTOBED } from '../../modules/nf-core/modules/bedtools/bamtobed/main.nf'
 include { BEDTOOLS_WINDOW } from '../../modules/local/bedtools_window.nf'
+include { BEDTOOLS_WINDOW as BEDTOOLS_WINDOW_REVERSED } from '../../modules/local/bedtools_window.nf'
 include { AWK as BEDGRAPHCONVERT_AWK } from '../../modules/local/awk.nf'
 
 workflow GENERATE_COUNT_TABLE {
@@ -21,6 +22,7 @@ workflow GENERATE_COUNT_TABLE {
     gtf
     fai
     polya_bed
+    quantseq_rev
 
     main:
 
@@ -95,13 +97,22 @@ workflow GENERATE_COUNT_TABLE {
         STAR_ALIGN.out.bam_sorted
     )
 
-    BEDTOOLS_WINDOW(
-        polya_bed.collect(),
-        BEDTOOLS_BAMTOBED.out.bed
-    )
+    if (quantseq_rev) {
+        BEDTOOLS_WINDOW_REVERSED(
+            polya_bed.collect(),
+            BEDTOOLS_BAMTOBED.out.bed
+        )
+        ch_window_counts = BEDTOOLS_WINDOW_REVERSED.out.overlap
+    } else {
+        BEDTOOLS_WINDOW(
+            polya_bed.collect(),
+            BEDTOOLS_BAMTOBED.out.bed
+        )
+        ch_window_counts = BEDTOOLS_WINDOW.out.overlap
+    }
 
     BEDGRAPHCONVERT_AWK(
-        BEDTOOLS_WINDOW.out.overlap,
+        ch_window_counts,
         '{{OFS="\t"}}{{if($6 == "+") {{print $1, $2, $3, $10}} else {{print $1, $2, $3, -$10}}}}',
         '| sort -k1,1 -k2,2n'
     )
