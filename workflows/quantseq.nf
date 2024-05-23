@@ -1,15 +1,18 @@
-include { SAMTOOLS_FAIDX } from '../modules/nf-core/modules/samtools/faidx/main.nf'
-include { FASTQC  } from '../modules/nf-core/modules/fastqc/main.nf'
-include { CUTADAPT as CUTADAPT_ADAPTERS } from '../modules/nf-core/modules/cutadapt/main.nf'
+include { SAMTOOLS_FAIDX } from '../modules/nf-core/samtools/faidx/main.nf'
+include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main.nf'
+include { FASTQC  } from '../modules/nf-core/fastqc/main.nf'
+include { CUTADAPT as CUTADAPT_ADAPTERS } from '../modules/nf-core/cutadapt/main.nf'
+include { CUTADAPT as CUTADAPT_ADAPTERS_TSO } from '../modules/nf-core/cutadapt/main.nf'
+include { UMITOOLS_EXTRACT } from '../modules/nf-core/umitools/extract/main.nf'
 include { GET_POLYA_READS } from '../subworkflows/local/get_polya_reads.nf'
-include { STAR_GENOMEGENERATE } from '../modules/nf-core/modules/star/genomegenerate/main.nf'
-include { STAR_ALIGN } from '../modules/nf-core/modules/star/align/main.nf'
-include { GUNZIP } from '../modules/nf-core/modules/gunzip/main.nf'
+include { STAR_GENOMEGENERATE } from '../modules/nf-core/star/genomegenerate/main.nf'
+include { STAR_ALIGN } from '../modules/nf-core/star/align/main.nf'
+include { UMICOLLAPSE } from '../modules/nf-core/umicollapse/main.nf'
+include { GUNZIP } from '../modules/nf-core/gunzip/main.nf'
 include { POLYA_COVERAGE } from '../subworkflows/local/polya_coverage.nf'
 include { GENERATE_COUNT_TABLE } from '../subworkflows/local/generate_count_table.nf'
 
 workflow QUANTSEQ {
-
     // Input stuff, kind of messy
 
     Channel.fromPath( params.input )
@@ -37,9 +40,24 @@ workflow QUANTSEQ {
         ch_fastq
     )
 
+    if(params.umitools_bc_pattern) {
+        UMITOOLS_EXTRACT(
+            ch_fastq
+        )
+        ch_fastq = UMITOOLS_EXTRACT.out.reads
+    }
+
+    if(params.tso) {
+        CUTADAPT_ADAPTERS_TSO(
+            ch_fastq
+        )
+        ch_fastq = CUTADAPT_ADAPTERS_TSO.out.reads
+    } else {
     CUTADAPT_ADAPTERS(
         ch_fastq
     )
+    ch_fastq = CUTADAPT_ADAPTERS.out.reads
+    }
 
     // Decompress the gtf / gff
     GUNZIP(
@@ -64,7 +82,7 @@ workflow QUANTSEQ {
 
     if(!params.polya_bed){
         GET_POLYA_READS(
-            CUTADAPT_ADAPTERS.out.reads
+            ch_fastq
         )
 
         STAR_ALIGN(
@@ -75,7 +93,27 @@ workflow QUANTSEQ {
             false, // seq_platform
             false  // seq_center
         )
-        STAR_ALIGN.out.bam_sorted
+
+        SAMTOOLS_INDEX ( 
+            STAR_ALIGN.out.bam_sorted 
+            )
+        ch_bam = STAR_ALIGN.out.bam_sorted
+        ch_bai = SAMTOOLS_INDEX.out.bai
+
+        if(params.umitools_bc_pattern) {
+            ch_bam_bai = ch_bam
+                .map { row -> [row[0].id, row ].flatten()}
+                .join ( ch_bai.map { row -> [row[0].id, row ].flatten()} )
+                .map { row -> [row[1], row[2], row[4]] }
+
+            UMICOLLAPSE(
+                ch_bam_bai,
+                "bam"
+            )
+            ch_bam = UMICOLLAPSE.out.bam
+        }
+
+        ch_bam
             .map{ tuple -> tuple[1] }
             .collect()
             .map{ paths -> [['id': 'merged_polya'], paths] }
@@ -95,12 +133,13 @@ workflow QUANTSEQ {
     }
 
     GENERATE_COUNT_TABLE(
-        CUTADAPT_ADAPTERS.out.reads,
+        ch_fastq,
         star_index,
         gtf_gunzip,
         fai,
         ch_polya_bed,
-        params.quantseq_rev
+        params.quantseq_rev,
+        params.umitools_bc_pattern
     )
 
 }

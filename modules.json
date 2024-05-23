@@ -1,44 +1,85 @@
 {
-    "name": "nf-core/test",
-    "homePage": "https://github.com/nf-core/test",
-    "repos": {
-        "nf-core/modules": {
-            "bedtools/bamtobed": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "bedtools/genomecov": {
-                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
-            },
-            "bedtools/sort": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "cutadapt": {
-                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
-            },
-            "fastqc": {
-                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
-            },
-            "gunzip": {
-                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
-            },
-            "samtools/faidx": {
-                "git_sha": "1ad73f1b2abdea9398680d6d20014838135c9a35"
-            },
-            "samtools/index": {
-                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
-            },
-            "samtools/merge": {
-                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
-            },
-            "star/align": {
-                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
-            },
-            "star/genomegenerate": {
-                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
-            },
-            "ucsc/bedgraphtobigwig": {
-                "git_sha": "e20e57f90b6787ac9a010a980cf6ea98bd990046"
-            }
+  "name": "ulelab/nf-quantseq",
+  "homePage": "https://github.com/ulelab/nf-quantseq",
+  "repos": {
+    "https://github.com/nf-core/modules.git": {
+      "modules": {
+        "nf-core": {
+          "bedtools/bamtobed": {
+            "branch": "master",
+            "git_sha": "219bbdaf9d08043a66f2b531609c1e8e4ac89021",
+            "installed_by": ["modules"]
+          },
+          "bedtools/genomecov": {
+            "branch": "master",
+            "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb",
+            "installed_by": ["modules"]
+          },
+          "bedtools/sort": {
+            "branch": "master",
+            "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb",
+            "installed_by": ["modules"]
+          },
+          "cutadapt": {
+            "branch": "master",
+            "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d",
+            "installed_by": ["modules"]
+          },
+          "fastqc": {
+            "branch": "master",
+            "git_sha": "49b18b1639f4f7104187058866a8fab33332bdfe",
+            "installed_by": ["modules"]
+          },
+          "gunzip": {
+            "branch": "master",
+            "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb",
+            "installed_by": ["modules"]
+          },
+          "samtools/faidx": {
+            "branch": "master",
+            "git_sha": "3eb99152cedbb7280258858e5df08478a4670696",
+            "installed_by": ["modules"]
+          },
+          "samtools/index": {
+            "branch": "master",
+            "git_sha": "897c33d5da084b61109500ee44c01da2d3e4e773",
+            "installed_by": ["modules"]
+          },
+          "samtools/merge": {
+            "branch": "master",
+            "git_sha": "e9bc33485e420b51cfbed3cf63ac7463cd5739d3",
+            "installed_by": ["modules"]
+          },
+          "star/align": {
+            "branch": "master",
+            "git_sha": "cd22a76c78b09f7837a5a75642774a4bf48c92ba",
+            "installed_by": ["modules"]
+          },
+          "star/genomegenerate": {
+            "branch": "master",
+            "git_sha": "cd22a76c78b09f7837a5a75642774a4bf48c92ba",
+            "installed_by": ["modules"]
+          },
+          "ucsc/bedgraphtobigwig": {
+            "branch": "master",
+            "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb",
+            "installed_by": ["modules"]
+          },
+          "umicollapse": {
+            "branch": "master",
+            "git_sha": "0c34b8159f62cde451c4ff249629c9d0a4f3f9c3",
+            "installed_by": ["modules"]
+          },
+          "umitools/extract": {
+            "branch": "master",
+            "git_sha": "d2c5e76f291379f3dd403e48e46ed7e6ba5da744",
+            "installed_by": ["modules"]
+          }
         }
+      },
+      "subworkflows": {
+        "nf-core": {}
+      }
     }
+  }
 }

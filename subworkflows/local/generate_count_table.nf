@@ -1,16 +1,18 @@
-include { CUTADAPT } from '../../modules/nf-core/modules/cutadapt/main.nf'
-include { STAR_ALIGN } from '../../modules/nf-core/modules/star/align/main.nf'
-include { SAMTOOLS_INDEX } from '../../modules/nf-core/modules/samtools/index/main.nf'
+include { CUTADAPT } from '../../modules/nf-core/cutadapt/main.nf'
+include { STAR_ALIGN } from '../../modules/nf-core/star/align/main.nf'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX} from '../../modules/nf-core/samtools/index/main.nf'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUPE} from '../../modules/nf-core/samtools/index/main.nf'
+include { UMICOLLAPSE } from '../../modules/nf-core/umicollapse/main.nf'
 include { STAR_INPUTALIGNMENTSFROMBAM } from '../../modules/local/star_inputalignmentsfrombam.nf'
 include {
     BEDTOOLS_SORT as BEDTOOLS_SORT_POS;
     BEDTOOLS_SORT as BEDTOOLS_SORT_NEG
-} from '../../modules/nf-core/modules/bedtools/sort/main.nf'
+} from '../../modules/nf-core/bedtools/sort/main.nf'
 include {
     UCSC_BEDGRAPHTOBIGWIG as UCSC_BEDGRAPHTOBIGWIG_POS;
     UCSC_BEDGRAPHTOBIGWIG as UCSC_BEDGRAPHTOBIGWIG_NEG
-} from '../../modules/nf-core/modules/ucsc/bedgraphtobigwig/main.nf'
-include { BEDTOOLS_BAMTOBED } from '../../modules/nf-core/modules/bedtools/bamtobed/main.nf'
+} from '../../modules/nf-core/ucsc/bedgraphtobigwig/main.nf'
+include { BEDTOOLS_BAMTOBED } from '../../modules/nf-core/bedtools/bamtobed/main.nf'
 include { BEDTOOLS_WINDOW } from '../../modules/local/bedtools_window.nf'
 include { BEDTOOLS_WINDOW as BEDTOOLS_WINDOW_REVERSED } from '../../modules/local/bedtools_window.nf'
 include { AWK as BEDGRAPHCONVERT_AWK } from '../../modules/local/awk.nf'
@@ -23,6 +25,7 @@ workflow GENERATE_COUNT_TABLE {
     fai
     polya_bed
     quantseq_rev
+    bc_pattern
 
     main:
 
@@ -46,13 +49,32 @@ workflow GENERATE_COUNT_TABLE {
         false, // seq_platform
         false  // seq_center
     )
+    ch_bam = STAR_ALIGN.out.bam_sorted
 
     SAMTOOLS_INDEX(
         STAR_ALIGN.out.bam_sorted
     )
+    ch_bai = SAMTOOLS_INDEX.out.bai
+
+    if(bc_pattern) {
+        ch_bam_bai = ch_bam
+            .map { row -> [row[0].id, row ].flatten()}
+            .join ( ch_bai.map { row -> [row[0].id, row ].flatten()} )
+            .map { row -> [row[1], row[2], row[4]] }
+
+        UMICOLLAPSE(
+            ch_bam_bai,
+            "bam"
+        )
+        ch_bam = UMICOLLAPSE.out.bam
+        SAMTOOLS_INDEX_DEDUPE(
+            UMICOLLAPSE.out.bam
+        )
+        ch_bai = SAMTOOLS_INDEX_DEDUPE.out.bai
+    }
 
     STAR_INPUTALIGNMENTSFROMBAM(
-        STAR_ALIGN.out.bam_sorted
+        ch_bam
     )
 
     STAR_INPUTALIGNMENTSFROMBAM.out.unique_coverage_pos
@@ -94,10 +116,10 @@ workflow GENERATE_COUNT_TABLE {
     // Create count table
 
     BEDTOOLS_BAMTOBED(
-        STAR_ALIGN.out.bam_sorted
+        ch_bam
     )
 
-    if (quantseq_rev) {
+    if(quantseq_rev) {
         BEDTOOLS_WINDOW_REVERSED(
             polya_bed.collect(),
             BEDTOOLS_BAMTOBED.out.bed
@@ -118,6 +140,6 @@ workflow GENERATE_COUNT_TABLE {
     )
 
     emit:
-    bam = STAR_ALIGN.out.bam_sorted
-    bai = SAMTOOLS_INDEX.out.bai
+    bam = ch_bam
+    bai = ch_bai
 }
