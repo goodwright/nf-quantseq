@@ -1,6 +1,8 @@
 # nf-quantseq
 
 ## Usage
+You must have Nextflow and either Docker/Singularity installed.
+
 An example usage, FASTQ must be single end and provided as a reference to a directory.
 The organism provided as "org" must be one of: "hg38", "mm10", "mm39", "rn6", "rn7".
 
@@ -26,5 +28,6 @@ If you sequenced using TSO protocol you will have NNNNNGGG at the start of your 
 
 ### Quantseq Reverse
 The pipeline is defaulted to dealing with libraries that produce forward stranded reads. Quantseq REV produces reverse stranded reads and so read counting must be on the opposite strand. To do this provide the option `-quantseq_rev` at command line or `quantseq_rev=true` in config file.
-!!Note!! currently you must provide a polya_bed with this option.
+
+*!!Note!! currently you must provide a polya_bed with this option.*
 
