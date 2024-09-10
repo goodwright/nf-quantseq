@@ -3,7 +3,7 @@ process UMITOOLS_EXTRACT {
     label "process_single"
     label "process_long"
 
-    conda "${moduleDir}/environment.yml"
+    conda (params.enable_conda ? 'bioconda::umi_tools:1.1.5' : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/umi_tools:1.1.5--py39hf95cd2a_0' :
         'quay.io/biocontainers/umi_tools:1.1.5--py39hf95cd2a_0' }"
