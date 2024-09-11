@@ -3,7 +3,7 @@ process UMICOLLAPSE {
     label "process_high"
     label "process_high_memory"
 
-    conda "${moduleDir}/environment.yml"
+    conda (params.enable_conda ? 'bioconda::umicollapse:1.0.0' : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/umicollapse:1.0.0--hdfd78af_1' :
         'quay.io/biocontainers/umicollapse:1.0.0--hdfd78af_1' }"
