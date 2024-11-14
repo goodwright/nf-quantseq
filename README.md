@@ -24,7 +24,7 @@ nextflow run ulelab/nf-quantseq -r feat-userInputSites \
 If you have a set of PolyA sites from a previous pipeline run that you would like to quantify against, provide the bed with the `-polya_bed` parameter. It will be in the polyaclusters folder and named `merged_polya.filteredunique.annotated.bed`. You can also provide a bed file that wasn't produced by this pipeline, ensure the polyA sites are single nucleotide positions.
 
 ### TSO sequencing
-If you sequenced using TSO protocol you will have NNNNNGGG at the start of your reads. Use param `-tso` for removing the GGG and param `-umitools_bc_pattern 'NNNNN'` to extract the UMI to the read header and trigger PCR duplicate removal before PolyA site atlas generation and quantification.
+If you sequenced using TSO protocol you will have NNNNNGGG at the start of your reads. Use param `--tso` for removing the GGG and param `--umitools_bc_pattern 'NNNNN'` to extract the UMI to the read header and trigger PCR duplicate removal before PolyA site atlas generation and quantification.
 
 ### Quantseq Reverse
 The pipeline is defaulted to dealing with libraries that produce forward stranded reads. Quantseq REV produces reverse stranded reads and so read counting must be on the opposite strand. To do this provide the option `-quantseq_rev` at command line or `quantseq_rev=true` in config file.
