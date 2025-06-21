@@ -1,0 +1,80 @@
+{
+    "inputs": [
+        {
+            "name": "Sample options",
+            "description": "Parameters relating to the sample being analysed.",
+            "advanced": false,
+            "params": {
+                "input": {
+                    "name": "Samples",
+                    "description": "The samples to process.",
+                    "required": true,
+                    "type": "csv",
+                    "takes_samples": true,
+                    "sample_types": ["RNA-Seq"],
+                    "columns": [
+                        {
+                            "name": "sample",
+                            "type": "string",
+                            "from_sample": "name",
+                            "required": true,
+                            "render": false
+                        },
+                        {
+                            "name": "fastq_1",
+                            "type": "data",
+                            "from_sample": 1,
+                            "required": true,
+                            "render": false
+                        },
+                        {
+                            "name": "fastq_2",
+                            "type": "data",
+                            "from_sample": 2,
+                            "required": false,
+                            "render": false
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Genome options",
+            "description": "The genome being aligned to.",
+            "advanced": false,
+            "from_execution": true,
+            "params": {
+                "fasta": {
+                    "name": "FASTA",
+                    "type": "data",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "required": true,
+                    "execution_output": {
+                        "process": null,
+                        "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$"
+                    },
+                    "description": "A raw genome FASTA file."
+                },
+                "gtf": {
+                    "name": "GTF",
+                    "type": "data",
+                    "pattern": "^\\S+\\.gtf(\\.gz)?$",
+                    "required": true,
+                    "execution_output": {
+                        "process": null,
+                        "pattern": "^\\S+\\.gtf(\\.gz)?$"
+                    },
+                    "description": "An annotation for the genome."
+                }
+            }
+        }
+    ],
+    "outputs": [
+        {
+            "name": "MultiQC report",
+            "description": "Report aggregating all QC reporting including FastQC, alignment stats and DeSeq2 plots.",
+            "filetype": "html",
+            "process": "MULTIQC"
+        }
+    ]
+}
